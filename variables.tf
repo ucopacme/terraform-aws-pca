@@ -104,6 +104,11 @@ variable "sub_ca_validity_years" {
   type        = number
   default     = 3
 }
+variable "sub_ca_validity_value" {
+  description = "Validity value for subordinate CA certificate"
+  type        = number
+  default     = 5
+}
 
 variable "sub_ca_validity_type" {
   description = "Validity type for subordinate CA certificate (DAYS or YEARS)"
