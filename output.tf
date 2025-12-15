@@ -1,11 +1,9 @@
-output "ca_arn" {
-  description = "ARN of the Private CA"
-  value       = aws_acmpca_certificate_authority.this.arn
+output "root_ca_arn" {
+  description = "ARN of the root CA"
+  value       = aws_acmpca_certificate_authority.root[0].arn
 }
 
-output "csr" {
-  description = "CSR for subordinate CA"
-  value       = aws_acmpca_certificate_authority.this.certificate_signing_request
-  sensitive   = true
+output "root_ca_csr" {
+  description = "CSR of the root CA"
+  value       = aws_acmpca_certificate_authority.root[0].certificate_signing_request
 }
-
