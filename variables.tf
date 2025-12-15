@@ -40,6 +40,7 @@ variable "subject" {
 # --------------------------------
 # NEW: Single subject object
 # --------------------------------
+# Per-subordinate CA OCSP
 variable "subordinate_cas" {
   description = "Map of subordinate CAs to create. Each key is an identifier."
   type = map(object({
@@ -54,6 +55,7 @@ variable "subordinate_cas" {
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
     crl_s3_bucket         = optional(string, "") # optional, for different CRLs
+    enable_ocsp           = optional(bool, false) # per-subordinate OCSP toggle
   }))
   default = {}
 }
@@ -114,4 +116,11 @@ variable "sub_ca_validity_years" {
   description = "Validity period for subordinate CA (in years)"
   type        = number
   default     = 3
+}
+
+# Global toggle for root CA
+variable "enable_ocsp" {
+  description = "Enable OCSP for root CA"
+  type        = bool
+  default     = false
 }

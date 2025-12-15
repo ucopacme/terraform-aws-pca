@@ -32,11 +32,16 @@ resource "aws_acmpca_certificate_authority" "root" {
       s3_bucket_name     = var.crl_s3_bucket
       s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
     }
+
+    ocsp_configuration {
+      enabled = var.enable_ocsp
+    }
   }
 
   usage_mode = var.usage_mode
   tags       = var.tags
 }
+
 
 
 # -------------------------
@@ -93,6 +98,10 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
       expiration_in_days = var.crl_expiration_days
       s3_bucket_name     = coalesce(each.value.crl_s3_bucket, var.crl_s3_bucket)
       s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
+    }
+
+    ocsp_configuration {
+      enabled = lookup(each.value, "enable_ocsp", false)
     }
   }
 
