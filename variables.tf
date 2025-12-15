@@ -70,8 +70,10 @@ variable "crl_expiration_days" {
 }
 
 variable "crl_s3_bucket" {
-  type = string
+  type    = string
+  default = ""
 }
+
 
 variable "usage_mode" {
   type    = string

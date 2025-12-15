@@ -38,6 +38,7 @@ resource "aws_acmpca_certificate_authority" "root" {
   tags       = var.tags
 }
 
+
 # -------------------------
 # ROOT CA: Self-signed Certificate
 # -------------------------
@@ -68,7 +69,9 @@ resource "aws_acmpca_certificate_authority_certificate" "install_root" {
 # SUBORDINATE CAs: One CA per subordinate
 # -------------------------
 resource "aws_acmpca_certificate_authority" "subordinate" {
-  for_each = var.type == "SUBORDINATE" && var.activate_ca && var.root_ca_arn != null ? var.subordinate_cas : {}
+  for_each = var.type == "SUBORDINATE" && var.activate_ca && var.root_ca_arn != null
+    ? var.subordinate_cas
+    : {}
 
   type = "SUBORDINATE"
 
@@ -90,14 +93,21 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
     crl_configuration {
       enabled            = var.enable_crl
       expiration_in_days = var.crl_expiration_days
-      s3_bucket_name     = lookup(each.value, "crl_s3_bucket", var.crl_s3_bucket)
-      s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
+
+      # per-subordinate bucket override
+      s3_bucket_name = coalesce(
+        each.value.crl_s3_bucket,
+        var.crl_s3_bucket
+      )
+
+      s3_object_acl = "BUCKET_OWNER_FULL_CONTROL"
     }
   }
 
   usage_mode = var.usage_mode
   tags       = var.tags
 }
+
 
 # -------------------------
 # SUBORDINATE Certificates: Signed by ROOT
