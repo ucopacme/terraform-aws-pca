@@ -27,17 +27,24 @@ variable "signing_algorithm" {
 # --------------------------------
 # NEW: Single subject object
 # --------------------------------
-variable "subject" {
-  description = "Certificate subject details"
-  type = object({
-    common_name         = string
-    organization        = string
-    organizational_unit = string
-    country             = string
-    state               = string
-    locality            = string
-  })
+variable "subordinate_cas" {
+  description = "Map of subordinate CAs to create. Each key is an identifier."
+  type = map(object({
+    subject = object({
+      common_name         = string
+      organization        = string
+      organizational_unit = string
+      country             = string
+      state               = string
+      locality            = string
+    })
+    sub_ca_validity_type  = string
+    sub_ca_validity_value = number
+    crl_s3_bucket         = optional(string, "") # optional, for different CRLs
+  }))
+  default = {}
 }
+
 
 variable "enable_crl" {
   type    = bool
