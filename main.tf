@@ -66,24 +66,25 @@ resource "aws_acmpca_certificate_authority_certificate" "install_root" {
 # SUBORDINATE CA: Sign & install
 # -------------------------
 resource "aws_acmpca_certificate" "activate_sub_ca" {
-  for_each = var.type == "SUBORDINATE" && length(var.subordinate_cas) > 0 ? var.subordinate_cas : {}
+  for_each = aws_acmpca_certificate_authority.subordinate
 
   certificate_authority_arn   = var.root_ca_arn
-  certificate_signing_request = aws_acmpca_certificate_authority.this.certificate_signing_request
+  certificate_signing_request = each.value.certificate_signing_request
   signing_algorithm           = var.signing_algorithm
 
   validity {
-    type  = lookup(each.value, "sub_ca_validity_type", "YEARS")
-    value = lookup(each.value, "sub_ca_validity_value", 5)
+    type  = lookup(var.subordinate_cas[each.key], "sub_ca_validity_type", "YEARS")
+    value = lookup(var.subordinate_cas[each.key], "sub_ca_validity_value", 5)
   }
 
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/SubordinateCACertificate_PathLen0/V1"
 }
 
+
 resource "aws_acmpca_certificate_authority_certificate" "install_cert" {
   for_each = aws_acmpca_certificate.activate_sub_ca
 
-  certificate_authority_arn = aws_acmpca_certificate_authority.this.arn
+  certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
   certificate               = each.value.certificate
   certificate_chain         = each.value.certificate_chain
 }
