@@ -115,3 +115,20 @@ variable "sub_ca_validity_type" {
   type        = string
   default     = "YEARS"
 }
+
+variable "subordinate_cas" {
+  description = "Map of subordinate CAs with their subject and optional validity."
+  type = map(object({
+    subject = object({
+      common_name         = string
+      organization        = string
+      organizational_unit = optional(string)
+      country             = string
+      state               = string
+      locality            = optional(string)
+    })
+    sub_ca_validity_type  = optional(string, "YEARS")
+    sub_ca_validity_value = optional(number, 5)
+  }))
+  default = {}
+}
