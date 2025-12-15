@@ -69,9 +69,11 @@ resource "aws_acmpca_certificate_authority_certificate" "install_root" {
 # SUBORDINATE CAs: One CA per subordinate
 # -------------------------
 resource "aws_acmpca_certificate_authority" "subordinate" {
-  for_each = var.type == "SUBORDINATE" && var.activate_ca && var.root_ca_arn != null
-    ? var.subordinate_cas
-    : {}
+  for_each = (
+    var.type == "SUBORDINATE"
+    && var.activate_ca
+    && var.root_ca_arn != null
+  ) ? var.subordinate_cas : {}
 
   type = "SUBORDINATE"
 
