@@ -106,7 +106,7 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
 # SUBORDINATE Certificates: Signed by ROOT
 # -------------------------
 resource "aws_acmpca_certificate" "activate_sub_ca" {
-  for_each = var.type == "SUBORDINATE" && var.activate_ca && var.root_ca_arn != null ? var.subordinate_cas : {}
+  for_each = var.type == "SUBORDINATE" && var.activate_ca ? var.subordinate_cas : {}
 
   certificate_authority_arn   = var.root_ca_arn
   certificate_signing_request = aws_acmpca_certificate_authority.subordinate[each.key].certificate_signing_request
@@ -120,11 +120,12 @@ resource "aws_acmpca_certificate" "activate_sub_ca" {
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/SubordinateCACertificate_PathLen0/V1"
 }
 
+
 # -------------------------
 # Install Subordinate Certificates
 # -------------------------
 resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
-  for_each = var.type == "SUBORDINATE" && var.activate_ca && var.root_ca_arn != null ? var.subordinate_cas : {}
+  for_each = var.type == "SUBORDINATE" && var.activate_ca ? var.subordinate_cas : {}
 
   certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
   certificate               = aws_acmpca_certificate.activate_sub_ca[each.key].certificate
