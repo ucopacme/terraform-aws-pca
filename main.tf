@@ -77,12 +77,12 @@ resource "aws_acmpca_certificate" "activate_sub_ca" {
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/SubordinateCACertificate_PathLen0/V1"
 }
 
-
 resource "aws_acmpca_certificate_authority_certificate" "install_cert" {
-  count = var.type == "SUBORDINATE" && var.root_ca_arn != "" ? 1 : 0
+  for_each = aws_acmpca_certificate.activate_sub_ca
 
   certificate_authority_arn = aws_acmpca_certificate_authority.this.arn
-  certificate               = aws_acmpca_certificate.activate_sub_ca["sub"].certificate
-  certificate_chain         = aws_acmpca_certificate.activate_sub_ca["sub"].certificate_chain
+  certificate               = each.value.certificate
+  certificate_chain         = each.value.certificate_chain
 }
+
 
