@@ -4,21 +4,19 @@ data "aws_partition" "current" {}
 # Create the CA
 # -------------------------
 resource "aws_acmpca_certificate_authority" "this" {
-  for_each = var.type == "SUBORDINATE" && length(var.subordinate_cas) > 0 ? var.subordinate_cas : {}
-
-  type = "SUBORDINATE"
+  type = var.type
 
   certificate_authority_configuration {
     key_algorithm     = var.key_algorithm
     signing_algorithm = var.signing_algorithm
 
     subject {
-      common_name         = each.value.subject.common_name
-      organization        = each.value.subject.organization
-      organizational_unit = lookup(each.value.subject, "organizational_unit", "")
-      country             = each.value.subject.country
-      state               = each.value.subject.state
-      locality            = lookup(each.value.subject, "locality", "")
+      common_name         = var.subject.common_name
+      organization        = var.subject.organization
+      organizational_unit = var.subject.organizational_unit
+      country             = var.subject.country
+      state               = var.subject.state
+      locality            = var.subject.locality
     }
   }
 
@@ -34,7 +32,6 @@ resource "aws_acmpca_certificate_authority" "this" {
   usage_mode = var.usage_mode
   tags       = var.tags
 }
-
 
 # -------------------------
 # ROOT CA: Sign & install self-signed certificate
@@ -66,26 +63,25 @@ resource "aws_acmpca_certificate_authority_certificate" "install_root" {
 # SUBORDINATE CA: Sign & install
 # -------------------------
 resource "aws_acmpca_certificate" "activate_sub_ca" {
-  for_each = aws_acmpca_certificate_authority.subordinate
+  for_each = var.type == "SUBORDINATE" && var.root_ca_arn != "" ? { "sub" = 1 } : {}
 
   certificate_authority_arn   = var.root_ca_arn
-  certificate_signing_request = each.value.certificate_signing_request
+  certificate_signing_request = aws_acmpca_certificate_authority.this.certificate_signing_request
   signing_algorithm           = var.signing_algorithm
 
   validity {
-    type  = lookup(var.subordinate_cas[each.key], "sub_ca_validity_type", "YEARS")
-    value = lookup(var.subordinate_cas[each.key], "sub_ca_validity_value", 5)
-  }
+  type  = "YEARS"
+  value = var.sub_ca_validity_years
+}
+
 
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/SubordinateCACertificate_PathLen0/V1"
 }
 
-
 resource "aws_acmpca_certificate_authority_certificate" "install_cert" {
-  for_each = aws_acmpca_certificate.activate_sub_ca
+  count = var.type == "SUBORDINATE" && var.root_ca_arn != "" ? 1 : 0
 
-  certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
-  certificate               = each.value.certificate
-  certificate_chain         = each.value.certificate_chain
+  certificate_authority_arn = aws_acmpca_certificate_authority.this.arn
+  certificate               = aws_acmpca_certificate.activate_sub_ca["sub"].certificate
+  certificate_chain         = aws_acmpca_certificate.activate_sub_ca["sub"].certificate_chain
 }
-

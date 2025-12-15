@@ -1,11 +1,11 @@
 variable "type" {
-  description = "Specifies the type of Private CA to create. Valid values are ROOT or SUBORDINATE."
+  description = "CA type: ROOT or SUBORDINATE"
   type        = string
   default     = "ROOT"
 }
 
 variable "key_algorithm" {
-  description = "The algorithm used to generate the CA's private key. Supported values include ML-DSA (quantum-resistant), RSA, and ECDSA key types."
+  description = "Key algorithm for the CA"
   type        = string
 
   validation {
@@ -20,16 +20,15 @@ variable "key_algorithm" {
 }
 
 variable "signing_algorithm" {
-  description = "The signature algorithm used by the CA when signing certificates. Defaults to SHA256WITHRSA."
-  type        = string
-  default     = "SHA256WITHRSA"
+  type    = string
+  default = "SHA256WITHRSA"
 }
 
 # --------------------------------
 # NEW: Single subject object
 # --------------------------------
 variable "subject" {
-  description = "Distinguished Name (DN) attributes for the CA certificate, such as CN, organization, and location fields."
+  description = "Certificate subject details"
   type = object({
     common_name         = string
     organization        = string
@@ -41,94 +40,56 @@ variable "subject" {
 }
 
 variable "enable_crl" {
-  description = "Enables or disables CRL (Certificate Revocation List) publishing for the CA."
-  type        = bool
-  default     = true
+  type    = bool
+  default = true
 }
 
 variable "crl_expiration_days" {
-  description = "Number of days before the published CRL expires and must be refreshed."
-  type        = number
-  default     = 7
+  type    = number
+  default = 7
 }
 
 variable "crl_s3_bucket" {
-  description = "Name of the S3 bucket where CRLs (Certificate Revocation Lists) will be stored."
-  type        = string
+  type = string
 }
 
 variable "usage_mode" {
-  description = "Defines the intended usage mode for the CA. Valid values include GENERAL_PURPOSE or SHORT_LIVED_CERTIFICATE."
-  type        = string
-  default     = "GENERAL_PURPOSE"
+  type    = string
+  default = "GENERAL_PURPOSE"
 }
 
 variable "tags" {
-  description = "Optional tags to apply to all created AWS resources."
-  type        = map(string)
-  default     = {}
+  type    = map(string)
+  default = {}
 }
 
 variable "activate_ca" {
-  description = "Controls whether the CA should be activated after creation. Set to true only when certificate signing material is provided."
-  type        = bool
-  default     = false
+  type    = bool
+  default = false
 }
 
 variable "signed_cert" {
-  description = "The signed certificate for activating the CA (used for subordinate CAs). Leave null for ROOT CA creation."
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }
 
 variable "cert_chain" {
-  description = "The certificate chain associated with the signed certificate for CA activation. Used for subordinate CAs."
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }
 
 variable "root_ca_validity_years" {
-  description = "Validity period (in years) for the Root CA certificate."
-  type        = number
-  default     = 5
+  type    = number
+  default = 5
 }
 
 variable "root_ca_arn" {
-  description = "ARN of the Root CA used to sign a subordinate CA certificate. Required only when type = SUBORDINATE."
-  type        = string
-  default     = null
+  type    = string
+  default = null
 }
 
 variable "sub_ca_validity_years" {
-  description = "Validity period (in years) for the Subordinate CA certificate."
+  description = "Validity period for subordinate CA (in years)"
   type        = number
   default     = 3
-}
-variable "sub_ca_validity_value" {
-  description = "Validity value for subordinate CA certificate"
-  type        = number
-  default     = 5
-}
-
-variable "sub_ca_validity_type" {
-  description = "Validity type for subordinate CA certificate (DAYS or YEARS)"
-  type        = string
-  default     = "YEARS"
-}
-
-variable "subordinate_cas" {
-  description = "Map of subordinate CAs with their subject and optional validity."
-  type = map(object({
-    subject = object({
-      common_name         = string
-      organization        = string
-      organizational_unit = optional(string)
-      country             = string
-      state               = string
-      locality            = optional(string)
-    })
-    sub_ca_validity_type  = optional(string, "YEARS")
-    sub_ca_validity_value = optional(number, 5)
-  }))
-  default = {}
 }
