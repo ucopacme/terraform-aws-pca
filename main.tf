@@ -3,20 +3,22 @@ data "aws_partition" "current" {}
 # -------------------------
 # Create the CA
 # -------------------------
-resource "aws_acmpca_certificate_authority" "this" {
-  type = var.type
+resource "aws_acmpca_certificate_authority" "subordinate" {
+  for_each = var.type == "SUBORDINATE" && length(var.subordinate_cas) > 0 ? var.subordinate_cas : {}
+
+  type = "SUBORDINATE"
 
   certificate_authority_configuration {
     key_algorithm     = var.key_algorithm
     signing_algorithm = var.signing_algorithm
 
     subject {
-      common_name         = var.subject.common_name
-      organization        = var.subject.organization
-      organizational_unit = var.subject.organizational_unit
-      country             = var.subject.country
-      state               = var.subject.state
-      locality            = var.subject.locality
+      common_name         = each.value.subject.common_name
+      organization        = each.value.subject.organization
+      organizational_unit = lookup(each.value.subject, "organizational_unit", "")
+      country             = each.value.subject.country
+      state               = each.value.subject.state
+      locality            = lookup(each.value.subject, "locality", "")
     }
   }
 
@@ -32,6 +34,7 @@ resource "aws_acmpca_certificate_authority" "this" {
   usage_mode = var.usage_mode
   tags       = var.tags
 }
+
 
 # -------------------------
 # ROOT CA: Sign & install self-signed certificate
