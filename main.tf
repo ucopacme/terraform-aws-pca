@@ -46,7 +46,7 @@ resource "aws_acmpca_certificate" "activate_root" {
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/RootCACertificate/V1"
 
   validity {
-    type  = "YEARS"
+    type  = var.sub_ca_validity_type
     value = var.root_ca_validity_years
   }
 }
