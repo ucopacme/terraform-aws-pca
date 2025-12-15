@@ -85,4 +85,3 @@ resource "aws_acmpca_certificate_authority_certificate" "install_cert" {
   certificate_chain         = each.value.certificate_chain
 }
 
-
