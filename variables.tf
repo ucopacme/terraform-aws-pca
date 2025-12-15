@@ -23,6 +23,17 @@ variable "signing_algorithm" {
   type    = string
   default = "SHA256WITHRSA"
 }
+variable "subject" {
+  description = "Subject for the main/root CA"
+  type = object({
+    common_name         = string
+    organization        = string
+    organizational_unit = string
+    country             = string
+    state               = string
+    locality            = string
+  })
+}
 
 # --------------------------------
 # NEW: Single subject object
