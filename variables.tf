@@ -54,11 +54,14 @@ variable "subordinate_cas" {
     })
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
-    crl_s3_bucket         = optional(string, "") # optional, for different CRLs
-    enable_ocsp           = optional(bool, false) # per-subordinate OCSP toggle
+    crl_s3_bucket         = optional(string, "")       # optional, different S3 bucket per subordinate
+    crl_custom_name       = optional(string, null)     # optional custom CRL name
+    enable_ocsp           = optional(bool, true)       # per-subordinate OCSP toggle
+    ocsp_custom_url       = optional(string, null)     # optional custom OCSP URL
   }))
   default = {}
 }
+
 
 
 variable "enable_crl" {
@@ -123,4 +126,29 @@ variable "enable_ocsp" {
   description = "Enable OCSP for root CA"
   type        = bool
   default     = false
+}
+
+
+variable "crl_custom_name" {
+  description = "Optional custom CRL file name"
+  type        = string
+  default     = null
+}
+
+variable "crl_expiration_days" {
+  description = "CRL validity period in days"
+  type        = number
+  default     = 7
+}
+
+variable "partitioned_crl" {
+  description = "Partitioned CRL enabled or disabled"
+  type        = bool
+  default     = false
+}
+
+variable "ocsp_custom_url" {
+  description = "Optional custom OCSP URL"
+  type        = string
+  default     = null
 }
