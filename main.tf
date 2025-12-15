@@ -70,8 +70,8 @@ resource "aws_acmpca_certificate" "activate_sub_ca" {
   signing_algorithm           = var.signing_algorithm
 
   validity {
-  type  = "YEARS"
-  value = var.sub_ca_validity_years
+  type  = var.sub_ca_validity_type
+  value = var.sub_ca_validity_value
 }
 
 
