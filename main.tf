@@ -70,10 +70,9 @@ resource "aws_acmpca_certificate" "activate_sub_ca" {
   signing_algorithm           = var.signing_algorithm
 
   validity {
-  type  = var.sub_ca_validity_type
-  value = var.sub_ca_validity_value
-}
-
+    type  = var.sub_ca_validity_type
+    value = var.sub_ca_validity_value
+  }
 
   template_arn = "arn:${data.aws_partition.current.partition}:acm-pca:::template/SubordinateCACertificate_PathLen0/V1"
 }
