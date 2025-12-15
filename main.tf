@@ -3,7 +3,7 @@ data "aws_partition" "current" {}
 # -------------------------
 # Create the CA
 # -------------------------
-resource "aws_acmpca_certificate_authority" "subordinate" {
+resource "aws_acmpca_certificate_authority" "this" {
   for_each = var.type == "SUBORDINATE" && length(var.subordinate_cas) > 0 ? var.subordinate_cas : {}
 
   type = "SUBORDINATE"
