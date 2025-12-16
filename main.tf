@@ -151,18 +151,44 @@ resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
 # Permissions: Allow SCEP Connector
 # -------------------------
 
-# If the module is creating a ROOT CA
-resource "aws_acmpca_permission" "root_scep_permission" {
-  count                     = var.type == "ROOT" ? 1 : 0
-  certificate_authority_arn = aws_acmpca_certificate_authority.root[0].arn
-  actions                   = ["IssueCertificate", "GetCertificate", "ListPermissions"]
-  principal                = "pca-connector-scep.amazonaws.com"
+# -------------------------
+# Permissions: Allow SCEP Connector via Resource Policy
+# -------------------------
+
+data "aws_iam_policy_document" "scep_policy" {
+  statement {
+    sid = "AllowSCEPConnector"
+    actions = [
+      "acm-pca:IssueCertificate",
+      "acm-pca:GetCertificate",
+      "acm-pca:ListPermissions"
+    ]
+    resources = ["*"] # This is scoped by the resource it's attached to
+    principals {
+      type        = "Service"
+      identifiers = ["pca-connector-scep.amazonaws.com"]
+    }
+    condition {
+      test     = "StringEquals"
+      variable = "aws:SourceAccount"
+      values   = [data.aws_caller_identity.current.account_id]
+    }
+  }
 }
 
-# If the module is creating SUBORDINATE CAs
-resource "aws_acmpca_permission" "subordinate_scep_permission" {
+# Add this data source if you don't have it
+data "aws_caller_identity" "current" {}
+
+# Policy for ROOT CA
+resource "aws_acmpca_policy" "root_scep_policy" {
+  count                     = var.type == "ROOT" ? 1 : 0
+  certificate_authority_arn = aws_acmpca_certificate_authority.root[0].arn
+  policy                    = data.aws_iam_policy_document.scep_policy.json
+}
+
+# Policy for SUBORDINATE CAs
+resource "aws_acmpca_policy" "subordinate_scep_policy" {
   for_each                  = var.type == "SUBORDINATE" ? var.subordinate_cas : {}
   certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
-  actions                   = ["IssueCertificate", "GetCertificate", "ListPermissions"]
-  principal                = "pca-connector-scep.amazonaws.com"
+  policy                    = data.aws_iam_policy_document.scep_policy.json
 }
