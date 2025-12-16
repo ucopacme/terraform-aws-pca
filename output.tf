@@ -10,3 +10,11 @@ output "root_ca_csr" {
     null
   )
 }
+
+output "subordinate_ca_arns" {
+  description = "Map of subordinate CA ARNs"
+  value = {
+    for k, ca in aws_acmpca_certificate_authority.subordinate :
+    k => ca.arn
+  }
+}
