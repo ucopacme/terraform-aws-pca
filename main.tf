@@ -155,6 +155,8 @@ resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
 # Permissions: Final Corrected Resource Policy
 # -------------------------
 
+data "aws_caller_identity" "current" {}
+
 # Policy for ROOT CA
 resource "aws_acmpca_policy" "root_scep_policy" {
   count        = var.type == "ROOT" ? 1 : 0
@@ -173,6 +175,12 @@ resource "aws_acmpca_policy" "root_scep_policy" {
         "acm-pca:ListPermissions"
       ]
       Resource = aws_acmpca_certificate_authority.root[0].arn
+      # THIS CONDITION IS THE FIX
+      Condition = {
+        StringEquals = {
+          "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+        }
+      }
     }]
   })
 }
@@ -195,7 +203,12 @@ resource "aws_acmpca_policy" "subordinate_scep_policy" {
         "acm-pca:ListPermissions"
       ]
       Resource = aws_acmpca_certificate_authority.subordinate[each.key].arn
+      # THIS CONDITION IS THE FIX
+      Condition = {
+        StringEquals = {
+          "aws:SourceAccount" = data.aws_caller_identity.current.account_id
+        }
+      }
     }]
   })
 }
-
