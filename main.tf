@@ -152,35 +152,50 @@ resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
 # -------------------------
 
 # -------------------------
-# Permissions: Corrected Resource Policy
+# Permissions: Final Corrected Resource Policy
 # -------------------------
 
-data "aws_iam_policy_document" "scep_policy" {
-  statement {
-    sid = "AllowSCEPConnector"
-    actions = [
-      "acm-pca:IssueCertificate",
-      "acm-pca:GetCertificate",
-      "acm-pca:ListPermissions"
-    ]
-    resources = ["*"] 
-    principals {
-      type        = "Service"
-      identifiers = ["pca-connector-scep.amazonaws.com"]
-    }
-  }
-}
-
-# Corrected Policy for ROOT CA
+# Policy for ROOT CA
 resource "aws_acmpca_policy" "root_scep_policy" {
   count        = var.type == "ROOT" ? 1 : 0
   resource_arn = aws_acmpca_certificate_authority.root[0].arn
-  policy       = data.aws_iam_policy_document.scep_policy.json
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "AllowSCEPConnector"
+      Effect = "Allow"
+      Principal = {
+        Service = "pca-connector-scep.amazonaws.com"
+      }
+      Action = [
+        "acm-pca:IssueCertificate",
+        "acm-pca:GetCertificate",
+        "acm-pca:ListPermissions"
+      ]
+      Resource = aws_acmpca_certificate_authority.root[0].arn
+    }]
+  })
 }
 
-# Corrected Policy for SUBORDINATE CAs
+# Policy for SUBORDINATE CAs
 resource "aws_acmpca_policy" "subordinate_scep_policy" {
   for_each     = var.type == "SUBORDINATE" ? var.subordinate_cas : {}
   resource_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
-  policy       = data.aws_iam_policy_document.scep_policy.json
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Sid    = "AllowSCEPConnector"
+      Effect = "Allow"
+      Principal = {
+        Service = "pca-connector-scep.amazonaws.com"
+      }
+      Action = [
+        "acm-pca:IssueCertificate",
+        "acm-pca:GetCertificate",
+        "acm-pca:ListPermissions"
+      ]
+      Resource = aws_acmpca_certificate_authority.subordinate[each.key].arn
+    }]
+  })
 }
+
