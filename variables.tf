@@ -69,10 +69,7 @@ variable "enable_crl" {
   default = true
 }
 
-variable "crl_expiration_days" {
-  type    = number
-  default = 7
-}
+
 
 variable "crl_s3_bucket" {
   type    = string
