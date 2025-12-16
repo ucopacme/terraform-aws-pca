@@ -111,6 +111,7 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
       ocsp_custom_url = lookup(each.value, "ocsp_custom_url", var.ocsp_custom_url)
     }
 }
+}
 
 
 
