@@ -145,3 +145,24 @@ resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
   certificate               = aws_acmpca_certificate.activate_sub_ca[each.key].certificate
   certificate_chain         = aws_acmpca_certificate.activate_sub_ca[each.key].certificate_chain
 }
+
+
+# -------------------------
+# Permissions: Allow SCEP Connector
+# -------------------------
+
+# If the module is creating a ROOT CA
+resource "aws_acmpca_permission" "root_scep_permission" {
+  count                     = var.type == "ROOT" ? 1 : 0
+  certificate_authority_arn = aws_acmpca_certificate_authority.root[0].arn
+  actions                   = ["IssueCertificate", "GetCertificate", "ListPermissions"]
+  principal                = "pca-connector-scep.amazonaws.com"
+}
+
+# If the module is creating SUBORDINATE CAs
+resource "aws_acmpca_permission" "subordinate_scep_permission" {
+  for_each                  = var.type == "SUBORDINATE" ? var.subordinate_cas : {}
+  certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
+  actions                   = ["IssueCertificate", "GetCertificate", "ListPermissions"]
+  principal                = "pca-connector-scep.amazonaws.com"
+}
