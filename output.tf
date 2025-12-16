@@ -11,10 +11,7 @@ output "root_ca_csr" {
   )
 }
 
-output "subordinate_ca_arns" {
-  description = "Map of subordinate CA ARNs"
-  value = {
-    for k, ca in aws_acmpca_certificate_authority.subordinate :
-    k => ca.arn
-  }
+output "subordinate_ca_arn_list" {
+  description = "List of subordinate CA ARNs"
+  value       = values(module.pqc_sub_cas.subordinate_ca_arns)
 }
