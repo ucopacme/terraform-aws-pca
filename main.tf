@@ -27,19 +27,19 @@ resource "aws_acmpca_certificate_authority" "root" {
 
   revocation_configuration {
     crl_configuration {
-      enabled             = var.enable_crl
-      expiration_in_days  = var.crl_expiration_days
-      s3_bucket_name      = var.crl_s3_bucket
-      s3_object_acl       = "BUCKET_OWNER_FULL_CONTROL"
-      custom_cname        = var.crl_custom_name
-     
+      enabled            = var.enable_crl
+      expiration_in_days = var.crl_expiration_days
+      s3_bucket_name     = var.crl_s3_bucket
+      s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
+      custom_cname       = var.crl_custom_name
+
     }
 
     ocsp_configuration {
-      enabled         = var.enable_ocsp
-      
+      enabled = var.enable_ocsp
+
     }
-}
+  }
 
 
   usage_mode = var.usage_mode
@@ -98,19 +98,19 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
 
   revocation_configuration {
     crl_configuration {
-      enabled             = lookup(each.value, "enable_crl", var.enable_crl)
-      expiration_in_days  = lookup(each.value, "crl_expiration_days", var.crl_expiration_days)
-      s3_bucket_name      = coalesce(each.value.crl_s3_bucket, var.crl_s3_bucket)
-      s3_object_acl       = "BUCKET_OWNER_FULL_CONTROL"
-      custom_cname        = lookup(each.value, "crl_custom_name", var.crl_custom_name)
-      
+      enabled            = lookup(each.value, "enable_crl", var.enable_crl)
+      expiration_in_days = lookup(each.value, "crl_expiration_days", var.crl_expiration_days)
+      s3_bucket_name     = coalesce(each.value.crl_s3_bucket, var.crl_s3_bucket)
+      s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
+      custom_cname       = lookup(each.value, "crl_custom_name", var.crl_custom_name)
+
     }
 
     ocsp_configuration {
-      enabled         = lookup(each.value, "enable_ocsp", var.enable_ocsp)
-      
+      enabled = lookup(each.value, "enable_ocsp", var.enable_ocsp)
+
     }
-}
+  }
 }
 
 

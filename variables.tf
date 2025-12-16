@@ -54,10 +54,10 @@ variable "subordinate_cas" {
     })
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
-    crl_s3_bucket         = optional(string, "")       # optional, different S3 bucket per subordinate
-    crl_custom_name       = optional(string, null)     # optional custom CRL name
-    enable_ocsp           = optional(bool, true)       # per-subordinate OCSP toggle
-    ocsp_custom_url       = optional(string, null)     # optional custom OCSP URL
+    crl_s3_bucket         = optional(string, "")   # optional, different S3 bucket per subordinate
+    crl_custom_name       = optional(string, null) # optional custom CRL name
+    enable_ocsp           = optional(bool, true)   # per-subordinate OCSP toggle
+    ocsp_custom_url       = optional(string, null) # optional custom OCSP URL
   }))
   default = {}
 }
