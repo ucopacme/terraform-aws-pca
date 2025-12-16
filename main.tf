@@ -171,11 +171,9 @@ resource "aws_acmpca_policy" "root_scep_policy" {
       }
       Action = [
         "acm-pca:IssueCertificate",
-        "acm-pca:GetCertificate",
-        "acm-pca:ListPermissions"
+        "acm-pca:GetCertificate"
       ]
       Resource = aws_acmpca_certificate_authority.root[0].arn
-      # THIS CONDITION IS THE FIX
       Condition = {
         StringEquals = {
           "aws:SourceAccount" = data.aws_caller_identity.current.account_id
@@ -199,11 +197,9 @@ resource "aws_acmpca_policy" "subordinate_scep_policy" {
       }
       Action = [
         "acm-pca:IssueCertificate",
-        "acm-pca:GetCertificate",
-        "acm-pca:ListPermissions"
+        "acm-pca:GetCertificate"
       ]
       Resource = aws_acmpca_certificate_authority.subordinate[each.key].arn
-      # THIS CONDITION IS THE FIX
       Condition = {
         StringEquals = {
           "aws:SourceAccount" = data.aws_caller_identity.current.account_id
