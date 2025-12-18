@@ -5,27 +5,19 @@ variable "type" {
 }
 
 variable "key_algorithm" {
-  description = "Key algorithm for the CA (required for ROOT only)"
+  description = "Key algorithm for the CA"
   type        = string
-  default     = null
 
   validation {
-    condition = (
-      var.type != "ROOT" ||
-      (
-        var.key_algorithm != null &&
-        contains([
-          "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
-          "RSA_2048", "RSA_3072", "RSA_4096",
-          "ECDSA_P256", "ECDSA_P384", "ECDSA_P521"
-        ], var.key_algorithm)
-      )
-    )
-    error_message = "For ROOT CA, key_algorithm must be one of the supported algorithms."
+    condition = contains([
+      "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
+      "RSA_2048", "RSA_3072", "RSA_4096",
+      "ECDSA_P256", "ECDSA_P384", "ECDSA_P521"
+    ], var.key_algorithm)
+
+    error_message = "Invalid key_algorithm"
   }
 }
-
-
 
 variable "signing_algorithm" {
   type    = string
@@ -41,13 +33,16 @@ variable "subject" {
     state               = string
     locality            = string
   })
-  default = null
+
 }
 
 
-# Per-subordinate CA 
+# --------------------------------
+# NEW: Single subject object
+# --------------------------------
+# Per-subordinate CA OCSP
 variable "subordinate_cas" {
-  description = "Map of subordinate CA definitions"
+  description = "Map of subordinate CAs to create. Each key is an identifier."
   type = map(object({
     subject = object({
       common_name         = string
@@ -57,22 +52,15 @@ variable "subordinate_cas" {
       state               = string
       locality            = string
     })
-
-    key_algorithm         = optional(string)
-    signing_algorithm     = optional(string)
-    enable_crl            = optional(bool)
-    crl_expiration_days   = optional(number)
-    crl_s3_bucket         = optional(string)
-    crl_custom_name       = optional(string)
-    enable_ocsp           = optional(bool)
-    usage_mode            = optional(string)
-
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
+    crl_s3_bucket         = optional(string, "")   # optional, different S3 bucket per subordinate
+    crl_custom_name       = optional(string, null) # optional custom CRL name
+    enable_ocsp           = optional(bool, true)   # per-subordinate OCSP toggle
+    ocsp_custom_url       = optional(string, null) # optional custom OCSP URL
   }))
   default = {}
 }
-
 
 
 
