@@ -39,6 +39,7 @@ variable "subject" {
 
 # Per-subordinate CA 
 variable "subordinate_cas" {
+  description = "Map of subordinate CA definitions"
   type = map(object({
     subject = object({
       common_name         = string
@@ -49,20 +50,19 @@ variable "subordinate_cas" {
       locality            = string
     })
 
-    # Per-sub CA controls
-    key_algorithm       = optional(string)
-    signing_algorithm  = optional(string)
-    enable_crl         = optional(bool)
-    crl_expiration_days = optional(number)
-    crl_s3_bucket      = optional(string)
-    crl_custom_name    = optional(string)
-    enable_ocsp        = optional(bool)
-    usage_mode         = optional(string)
+    key_algorithm         = optional(string)
+    signing_algorithm     = optional(string)
+    enable_crl            = optional(bool)
+    crl_expiration_days   = optional(number)
+    crl_s3_bucket         = optional(string)
+    crl_custom_name       = optional(string)
+    enable_ocsp           = optional(bool)
+    usage_mode            = optional(string)
 
-    # Cert validity
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
   }))
+  default = {}
 }
 
 
