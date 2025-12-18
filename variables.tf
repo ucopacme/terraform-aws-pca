@@ -7,6 +7,7 @@ variable "type" {
 variable "key_algorithm" {
   description = "Key algorithm for the CA"
   type        = string
+  default = null
 
   validation {
     condition = contains([
