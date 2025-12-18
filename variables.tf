@@ -10,8 +10,7 @@ variable "key_algorithm" {
   default     = null
 
   validation {
-    condition = (
-      var.key_algorithm == null ||
+    condition = can(
       contains([
         "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
         "RSA_2048", "RSA_3072", "RSA_4096",
@@ -22,6 +21,7 @@ variable "key_algorithm" {
     error_message = "Invalid key_algorithm. Must be one of the supported algorithms."
   }
 }
+
 
 
 variable "signing_algorithm" {
