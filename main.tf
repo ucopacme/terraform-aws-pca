@@ -83,8 +83,8 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
   type = "SUBORDINATE"
 
   certificate_authority_configuration {
-    key_algorithm     = var.key_algorithm
-    signing_algorithm = var.signing_algorithm
+    key_algorithm     = lookup(each.value, "key_algorithm", var.key_algorithm)
+    signing_algorithm = lookup(each.value, "signing_algorithm", var.signing_algorithm)
 
     subject {
       common_name         = each.value.subject.common_name
@@ -103,18 +103,16 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
       s3_bucket_name     = coalesce(each.value.crl_s3_bucket, var.crl_s3_bucket)
       s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
       custom_cname       = lookup(each.value, "crl_custom_name", var.crl_custom_name)
-
     }
 
     ocsp_configuration {
       enabled = lookup(each.value, "enable_ocsp", var.enable_ocsp)
-
     }
   }
+
+  usage_mode = lookup(each.value, "usage_mode", var.usage_mode)
+  tags       = var.tags
 }
-
-
-
 
 # -------------------------
 # SUBORDINATE Certificates: Signed by ROOT
