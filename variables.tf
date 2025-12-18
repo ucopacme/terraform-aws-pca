@@ -5,20 +5,23 @@ variable "type" {
 }
 
 variable "key_algorithm" {
-  description = "Key algorithm for the CA (required for ROOT, optional for SUBORDINATE)"
+  description = "Key algorithm for the CA (required for ROOT only)"
   type        = string
   default     = null
 
   validation {
     condition = (
-      var.key_algorithm == null ||
-      contains([
-        "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
-        "RSA_2048", "RSA_3072", "RSA_4096",
-        "ECDSA_P256", "ECDSA_P384", "ECDSA_P521"
-      ], var.key_algorithm)
+      var.type != "ROOT" ||
+      (
+        var.key_algorithm != null &&
+        contains([
+          "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
+          "RSA_2048", "RSA_3072", "RSA_4096",
+          "ECDSA_P256", "ECDSA_P384", "ECDSA_P521"
+        ], var.key_algorithm)
+      )
     )
-    error_message = "Invalid key_algorithm. Must be one of the supported algorithms."
+    error_message = "For ROOT CA, key_algorithm must be one of the supported algorithms."
   }
 }
 
