@@ -85,7 +85,7 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
   type       = "SUBORDINATE"
   usage_mode = each.value.usage_mode
   tags       = each.value.tags
-   permanent_deletion_time_in_days = var.permanent_deletion_time_in_days
+  permanent_deletion_time_in_days = each.value.permanent_deletion_time_in_days
   certificate_authority_configuration {
     # CHANGE: Use map value, not var.key_algorithm
     key_algorithm     = each.value.key_algorithm
