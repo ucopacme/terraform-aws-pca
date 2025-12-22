@@ -68,6 +68,7 @@ variable "subordinate_cas" {
     tags                  = optional(map(string), {})
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
+    permanent_deletion_time_in_days = optional(number)
   }))
   default = {}
 }
@@ -162,5 +163,5 @@ variable "ocsp_custom_url" {
 variable "permanent_deletion_time_in_days" {
   type        = number
   description = "Days before ACM PCA permanently deletes the CA after deletion"
-  default     = 30
+  default     = 7
 }
