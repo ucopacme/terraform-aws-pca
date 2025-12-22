@@ -77,14 +77,19 @@ resource "aws_acmpca_certificate_authority_certificate" "install_root" {
 # -------------------------
 # SUBORDINATE CAs: One CA per subordinate
 # -------------------------
+# SUBORDINATE CAs
+# -------------------------
 resource "aws_acmpca_certificate_authority" "subordinate" {
   for_each = var.type == "SUBORDINATE" ? var.subordinate_cas : {}
 
-  type = "SUBORDINATE"
+  type       = "SUBORDINATE"
+  usage_mode = each.value.usage_mode
+  tags       = each.value.tags
 
   certificate_authority_configuration {
-    key_algorithm     = var.key_algorithm
-    signing_algorithm = var.signing_algorithm
+    # CHANGE: Use map value, not var.key_algorithm
+    key_algorithm     = each.value.key_algorithm
+    signing_algorithm = each.value.signing_algorithm
 
     subject {
       common_name         = each.value.subject.common_name
@@ -98,33 +103,30 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
 
   revocation_configuration {
     crl_configuration {
-      enabled            = lookup(each.value, "enable_crl", var.enable_crl)
-      expiration_in_days = lookup(each.value, "crl_expiration_days", var.crl_expiration_days)
-      s3_bucket_name     = coalesce(each.value.crl_s3_bucket, var.crl_s3_bucket)
+      enabled            = each.value.enable_crl
+      expiration_in_days = each.value.crl_expiration_days
+      s3_bucket_name     = each.value.crl_s3_bucket
       s3_object_acl      = "BUCKET_OWNER_FULL_CONTROL"
-      custom_cname       = lookup(each.value, "crl_custom_name", var.crl_custom_name)
-
+      custom_cname       = each.value.crl_custom_name
     }
-
     ocsp_configuration {
-      enabled = lookup(each.value, "enable_ocsp", var.enable_ocsp)
-
+      enabled = each.value.enable_ocsp
     }
   }
 }
-
-
-
 
 # -------------------------
 # SUBORDINATE Certificates: Signed by ROOT
 # -------------------------
 resource "aws_acmpca_certificate" "activate_sub_ca" {
+  # We use the same map as the CA to ensure keys match
   for_each = var.type == "SUBORDINATE" && var.activate_ca ? var.subordinate_cas : {}
 
   certificate_authority_arn   = var.root_ca_arn
   certificate_signing_request = aws_acmpca_certificate_authority.subordinate[each.key].certificate_signing_request
-  signing_algorithm           = var.signing_algorithm
+  
+  # CHANGE: This MUST match the algorithm defined in the CA configuration above
+  signing_algorithm = each.value.signing_algorithm
 
   validity {
     type  = upper(each.value.sub_ca_validity_type)
@@ -141,6 +143,8 @@ resource "aws_acmpca_certificate_authority_certificate" "install_sub_cert" {
   for_each = var.type == "SUBORDINATE" && var.activate_ca ? var.subordinate_cas : {}
 
   certificate_authority_arn = aws_acmpca_certificate_authority.subordinate[each.key].arn
+  
+  # Reference the specific certificate generated in the step above
   certificate               = aws_acmpca_certificate.activate_sub_ca[each.key].certificate
   certificate_chain         = aws_acmpca_certificate.activate_sub_ca[each.key].certificate_chain
 }

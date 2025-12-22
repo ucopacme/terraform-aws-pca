@@ -7,24 +7,23 @@ variable "type" {
 variable "key_algorithm" {
   description = "Key algorithm for the CA"
   type        = string
+  default     = null 
 
   validation {
-    condition = contains([
+    # If null, it's valid (because we're using sub-level config). 
+    # If NOT null, it must be in the list.
+    condition = var.key_algorithm == null ? true : contains([
       "ML-DSA-44", "ML-DSA-65", "ML-DSA-87",
       "RSA_2048", "RSA_3072", "RSA_4096",
       "ECDSA_P256", "ECDSA_P384", "ECDSA_P521"
     ], var.key_algorithm)
 
-    error_message = "Invalid key_algorithm"
+    error_message = "Invalid key_algorithm provided."
   }
 }
 
-variable "signing_algorithm" {
-  type    = string
-  default = "SHA256WITHRSA"
-}
 variable "subject" {
-  description = "Subject for root CA (optional for SUBORDINATE)"
+  description = "Subject for root CA"
   type = object({
     common_name         = string
     organization        = string
@@ -33,16 +32,21 @@ variable "subject" {
     state               = string
     locality            = string
   })
+  default = null 
+}
 
+# Do the same for any other erroring variables (e.g., signing_algorithm)
+variable "signing_algorithm" {
+  type    = string
+  default = "SHA256WITHRSA" # This already has a default, so it shouldn't error
 }
 
 
-# --------------------------------
-# NEW: Single subject object
-# --------------------------------
+
+
+
 # Per-subordinate CA OCSP
 variable "subordinate_cas" {
-  description = "Map of subordinate CAs to create. Each key is an identifier."
   type = map(object({
     subject = object({
       common_name         = string
@@ -52,16 +56,21 @@ variable "subordinate_cas" {
       state               = string
       locality            = string
     })
+    key_algorithm         = optional(string, "RSA_2048")
+    signing_algorithm     = optional(string, "SHA256WITHRSA")
+    usage_mode            = optional(string, "GENERAL_PURPOSE")
+    activate_ca           = optional(bool, true)
+    enable_crl            = optional(bool, true)
+    crl_expiration_days   = optional(number, 7)
+    crl_s3_bucket         = string
+    crl_custom_name       = optional(string, null)
+    enable_ocsp           = optional(bool, false)
+    tags                  = optional(map(string), {})
     sub_ca_validity_type  = string
     sub_ca_validity_value = number
-    crl_s3_bucket         = optional(string, "")   # optional, different S3 bucket per subordinate
-    crl_custom_name       = optional(string, null) # optional custom CRL name
-    enable_ocsp           = optional(bool, true)   # per-subordinate OCSP toggle
-    ocsp_custom_url       = optional(string, null) # optional custom OCSP URL
   }))
   default = {}
 }
-
 
 
 variable "enable_crl" {
