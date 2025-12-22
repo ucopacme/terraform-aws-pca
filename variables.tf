@@ -158,3 +158,9 @@ variable "ocsp_custom_url" {
   type        = string
   default     = null
 }
+
+variable "permanent_deletion_time_in_days" {
+  type        = number
+  description = "Days before ACM PCA permanently deletes the CA after deletion"
+  default     = 30
+}

@@ -10,7 +10,7 @@ resource "aws_acmpca_certificate_authority" "root" {
   count = var.type == "ROOT" ? 1 : 0
 
   type = "ROOT"
-
+  permanent_deletion_time_in_days = var.permanent_deletion_time_in_days
   certificate_authority_configuration {
     key_algorithm     = var.key_algorithm
     signing_algorithm = var.signing_algorithm
@@ -85,7 +85,7 @@ resource "aws_acmpca_certificate_authority" "subordinate" {
   type       = "SUBORDINATE"
   usage_mode = each.value.usage_mode
   tags       = each.value.tags
-
+   permanent_deletion_time_in_days = var.permanent_deletion_time_in_days
   certificate_authority_configuration {
     # CHANGE: Use map value, not var.key_algorithm
     key_algorithm     = each.value.key_algorithm
@@ -124,6 +124,7 @@ resource "aws_acmpca_certificate" "activate_sub_ca" {
 
   certificate_authority_arn   = var.root_ca_arn
   certificate_signing_request = aws_acmpca_certificate_authority.subordinate[each.key].certificate_signing_request
+ 
   
   # CHANGE: This MUST match the algorithm defined in the CA configuration above
   signing_algorithm = each.value.signing_algorithm
